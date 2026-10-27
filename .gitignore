@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local SQLite database & session secrets
+data/
+*.db
+*.db-shm
+*.db-wal
+.session_secret
+
+# Environment variables
+.env
+.env.*
+
+# IDE & OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Coverage & logs
+coverage/
+*.log

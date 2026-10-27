@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseFinance — Personal Finance Manager</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- Toast notification container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- AUTHENTICATION VIEW -->
+  <main id="auth-view" class="auth-wrapper">
+    <section class="auth-card" aria-labelledby="auth-heading">
+      <div class="brand-header">
+        <div class="brand-logo" aria-hidden="true">PF</div>
+        <div>
+          <h1 id="auth-heading" class="brand-title">PulseFinance</h1>
+          <p class="brand-subtitle">Smart Personal Finance &amp; Wealth Tracker</p>
+        </div>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button type="button" id="tab-login" class="auth-tab active" role="tab" aria-selected="true">Sign In</button>
+        <button type="button" id="tab-register" class="auth-tab" role="tab" aria-selected="false">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" name="email" required autocomplete="email" placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder="Minimum 8 characters" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In to Dashboard</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden" novalidate>
+        <div class="form-group">
+          <label for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" name="name" required autocomplete="name" placeholder="Alex Morgan" />
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" name="email" required autocomplete="email" placeholder="alex@example.com" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reg-password">Password (min 8 chars)</label>
+            <input type="password" id="reg-password" name="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="At least 8 characters" />
+          </div>
+          <div class="form-group">
+            <label for="reg-currency">Primary Currency</label>
+            <select id="reg-currency" name="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD ($)</option>
+              <option value="AUD">AUD ($)</option>
+              <option value="JPY">JPY (¥)</option>
+            </select>
+          </div>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="reg-seed-demo" checked />
+          <span>Populate account with sample transactions, budgets &amp; goals</span>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Create Personal Account</button>
+      </form>
+
+      <div class="auth-divider">
+        <span>or explore immediately</span>
+      </div>
+
+      <button type="button" id="btn-demo-login" class="btn btn-secondary btn-block">
+        Launch Instant Demo Workspace
+      </button>
+    </section>
+  </main>
+
+  <!-- APPLICATION DASHBOARD VIEW -->
+  <div id="app-view" class="app-layout hidden">
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand-logo small" aria-hidden="true">PF</div>
+        <div>
+          <span class="topbar-title">PulseFinance</span>
+          <span id="user-badge" class="user-badge"></span>
+        </div>
+      </div>
+
+      <div class="topbar-controls">
+        <div class="month-picker-group">
+          <label for="active-month" class="sr-only">Reporting Month</label>
+          <input type="month" id="active-month" class="month-input" />
+        </div>
+        <button type="button" id="btn-open-tx-modal" class="btn btn-primary">+ New Transaction</button>
+        <button type="button" id="btn-export-csv" class="btn btn-outline">Export CSV</button>
+        <button type="button" id="btn-logout" class="btn btn-ghost">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="dashboard-container">
+      <!-- KPI Summary Cards -->
+      <section class="kpi-grid" aria-label="Financial Summary">
+        <article class="kpi-card">
+          <span class="kpi-label">Total Net Worth</span>
+          <strong id="kpi-net-worth" class="kpi-value">$0.00</strong>
+          <span id="kpi-accounts-count" class="kpi-meta">Across 0 accounts</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Monthly Income</span>
+          <strong id="kpi-income" class="kpi-value positive">$0.00</strong>
+          <span class="kpi-meta">Selected month</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Monthly Expenses</span>
+          <strong id="kpi-expense" class="kpi-value negative">$0.00</strong>
+          <span class="kpi-meta">Selected month</span>
+        </article>
+        <article class="kpi-card">
+          <span class="kpi-label">Monthly Net &amp; Savings Rate</span>
+          <strong id="kpi-net-monthly" class="kpi-value">$0.00</strong>
+          <span id="kpi-savings-rate" class="kpi-meta">0% savings rate</span>
+        </article>
+      </section>
+
+      <!-- Main Visual Charts Row -->
+      <section class="charts-grid">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Cash Flow Trend (6 Months)</h2>
+              <p class="panel-subtitle">Monthly Income vs. Expenses comparison</p>
+            </div>
+          </div>
+          <div class="canvas-container">
+            <canvas id="cashflow-canvas" width="560" height="240"></canvas>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Spending by Category</h2>
+              <p class="panel-subtitle">Selected month expense distribution</p>
+            </div>
+          </div>
+          <div class="category-chart-layout">
+            <canvas id="category-canvas" width="220" height="220"></canvas>
+            <ul id="category-legend" class="category-legend"></ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- Accounts, Budgets, and Savings Goals Row -->
+      <section class="three-col-grid">
+        <!-- Accounts / Wallets -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Accounts &amp; Wallets</h2>
+              <p class="panel-subtitle">Checking, Savings &amp; Cards</p>
+            </div>
+            <button type="button" id="btn-open-account-modal" class="btn btn-sm btn-outline">+ Add</button>
+          </div>
+          <div id="accounts-list" class="stack-list"></div>
+        </article>
+
+        <!-- Monthly Category Budgets -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Monthly Budgets</h2>
+              <p class="panel-subtitle">Category limits &amp; alerts</p>
+            </div>
+            <button type="button" id="btn-open-budget-modal" class="btn btn-sm btn-outline">+ Set Limit</button>
+          </div>
+          <div id="budgets-list" class="stack-list"></div>
+        </article>
+
+        <!-- Savings Goals -->
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Savings Goals</h2>
+              <p class="panel-subtitle">Track milestones &amp; targets</p>
+            </div>
+            <button type="button" id="btn-open-goal-modal" class="btn btn-sm btn-outline">+ New Goal</button>
+          </div>
+          <div id="goals-list" class="stack-list"></div>
+        </article>
+      </section>
+
+      <!-- Transactions Ledger Section -->
+      <section class="panel ledger-panel">
+        <div class="panel-header ledger-header">
+          <div>
+            <h2 class="panel-title">Transactions Ledger</h2>
+            <p class="panel-subtitle">Filter, search, and audit your personal income and expenses</p>
+          </div>
+          <div class="filter-bar">
+            <input type="search" id="filter-search" class="filter-input" placeholder="Search description or category..." />
+            <select id="filter-type" class="filter-select" aria-label="Filter by type">
+              <option value="">All Types</option>
+              <option value="income">Income Only</option>
+              <option value="expense">Expense Only</option>
+            </select>
+            <select id="filter-category" class="filter-select" aria-label="Filter by category">
+              <option value="all">All Categories</option>
+            </select>
+            <select id="filter-account" class="filter-select" aria-label="Filter by account">
+              <option value="">All Accounts</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Account</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- NATIVE DIALOG: ADD TRANSACTION -->
+  <dialog id="modal-transaction" class="modal-dialog">
+    <form id="form-transaction" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h3>Record Transaction</h3>
+        <button type="button" class="btn-close" data-close-modal="modal-transaction" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-type">Transaction Type</label>
+            <select id="tx-type" required>
+              <option value="expense">Expense (-)</option>
+              <option value="income">Income (+)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tx-amount">Amount</label>
+            <input type="number" id="tx-amount" step="0.01" min="0.01" max="10000000" required placeholder="0.00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-account">Account</label>
+            <select id="tx-account" required></select>
+          </div>
+          <div class="form-group">
+            <label for="tx-category">Category</label>
+            <select id="tx-category" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tx-date">Date</label>
+            <input type="date" id="tx-date" required />
+          </div>
+          <div class="form-group">
+            <label for="tx-description">Description / Merchant</label>
+            <input type="text" id="tx-description" maxlength="140" placeholder="e.g., Trader Joe's Groceries" />
+          </div>
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" id="tx-recurring" />
+          <span>Mark as monthly recurring transaction</span>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="modal-transaction">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Transaction</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- NATIVE DIALOG: ADD ACCOUNT -->
+  <dialog id="modal-account" class="modal-dialog">
+    <form id="form-account" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h3>Add Financial Account</h3>
+        <button type="button" class="btn-close" data-close-modal="modal-account" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="acct-name">Account Name</label>
+          <input type="text" id="acct-name" maxlength="50" required placeholder="e.g., Chase Checking" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="acct-type">Account Type</label>
+            <select id="acct-type" required>
+              <option value="checking">Checking</option>
+              <option value="savings">Savings</option>
+              <option value="credit">Credit Card</option>
+              <option value="cash">Cash Wallet</option>
+              <option value="investment">Investment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="acct-balance">Current Balance</label>
+            <input type="number" id="acct-balance" step="0.01" value="0.00" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="acct-color">Accent Color</label>
+          <select id="acct-color">
+            <option value="#2563eb">Royal Blue</option>
+            <option value="#10b981">Emerald Green</option>
+            <option value="#8b5cf6">Violet Purple</option>
+            <option value="#f59e0b">Amber Gold</option>
+            <option value="#06b6d4">Cyan Teal</option>
+            <option value="#ec4899">Rose Pink</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="modal-account">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- NATIVE DIALOG: SET MONTHLY BUDGET -->
+  <dialog id="modal-budget" class="modal-dialog">
+    <form id="form-budget" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h3>Set Monthly Category Budget</h3>
+        <button type="button" class="btn-close" data-close-modal="modal-budget" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="budget-category">Expense Category</label>
+          <select id="budget-category" required></select>
+        </div>
+        <div class="form-group">
+          <label for="budget-limit">Monthly Spending Limit</label>
+          <input type="number" id="budget-limit" step="1" min="1" max="10000000" required placeholder="500.00" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="modal-budget">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Budget Limit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- NATIVE DIALOG: CREATE SAVINGS GOAL -->
+  <dialog id="modal-goal" class="modal-dialog">
+    <form id="form-goal" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h3>Create Savings Goal</h3>
+        <button type="button" class="btn-close" data-close-modal="modal-goal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="goal-name">Goal Name</label>
+          <input type="text" id="goal-name" maxlength="60" required placeholder="e.g., Emergency Fund" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="goal-target">Target Amount</label>
+            <input type="number" id="goal-target" step="1" min="1" required placeholder="10000" />
+          </div>
+          <div class="form-group">
+            <label for="goal-current">Already Saved</label>
+            <input type="number" id="goal-current" step="1" min="0" value="0" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="goal-date">Target Date</label>
+            <input type="date" id="goal-date" />
+          </div>
+          <div class="form-group">
+            <label for="goal-color">Theme Color</label>
+            <select id="goal-color">
+              <option value="#10b981">Emerald Green</option>
+              <option value="#2563eb">Royal Blue</option>
+              <option value="#8b5cf6">Violet Purple</option>
+              <option value="#f59e0b">Amber Gold</option>
+              <option value="#ec4899">Rose Pink</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="modal-goal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Goal</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- NATIVE DIALOG: CONTRIBUTE TO SAVINGS GOAL -->
+  <dialog id="modal-goal-contribute" class="modal-dialog">
+    <form id="form-goal-contribute" class="modal-content" novalidate>
+      <div class="modal-header">
+        <h3 id="contribute-modal-title">Update Goal Balance</h3>
+        <button type="button" class="btn-close" data-close-modal="modal-goal-contribute" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="contribute-goal-id" />
+        <div class="form-group">
+          <label for="contribute-amount">Add / Withdraw Amount (use negative to withdraw)</label>
+          <input type="number" id="contribute-amount" step="0.01" required placeholder="250.00" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-close-modal="modal-goal-contribute">Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Saved Amount</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script nonce="__CSP_NONCE__" src="/app.js"></script>
+</body>
+</html>
